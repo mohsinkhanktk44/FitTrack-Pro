@@ -3,12 +3,11 @@
 import type React from "react"
 
 import { useState } from "react"
-import { X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
-
+import { authClient } from "@/lib/auth-client"; 
 type Role = "coach" | "athlete" | null
 
 interface AuthModalProps {
@@ -35,14 +34,15 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
     }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Here you would handle the form submission with the role and form data
     console.log("Submitting:", { role: selectedRole, ...formData })
-    // You can add your API call or authentication logic here
-
-    // Close the modal after submission or show success message
-    // onClose();
+    const { data, error } = await authClient.signUp.email({
+      email: formData.email,
+      password: "password1234",
+      name: formData.name,
+    });
+    console.log("Sign up response:", { data, error })
   }
 
   const resetModal = () => {
@@ -50,6 +50,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
     setFormData({ name: "", email: "" })
     onClose()
   }
+
 
   return (
     <Dialog open={isOpen} onOpenChange={resetModal}>
@@ -99,6 +100,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 required
               />
             </div>
+            
             <Button type="submit" className="w-full">
               Register as {selectedRole}
             </Button>
