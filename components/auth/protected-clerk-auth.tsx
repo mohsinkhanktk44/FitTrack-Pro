@@ -30,7 +30,7 @@ export default function ProtectedClerkAuth({
   const router = useRouter();
   
   // Clerk hooks
-  const { user } = useUser();
+  const { user,isSignedIn } = useUser();
   const { signOut } = useClerk();
 
   // Handle component mounting to prevent hydration errors
@@ -46,25 +46,49 @@ export default function ProtectedClerkAuth({
   }, [isDevelopment, skipCaptchaInDev]);
 
   // Set user role when the user is created/updated
-  useEffect(() => {
-    const updateUserRoleMetadata = async () => {
-      if (user && userRole) {
-        try {
+  console.log(userRole,'url-e-----------');
+  
+  // useEffect(() => {
+  //   const updateUserRoleMetadata = async () => {
+  //     if (user && userRole) {
+  //       try {
+  //         await user.update({
+  //           unsafeMetadata: {
+  //             ...user.unsafeMetadata,
+  //             role: userRole,
+  //           },
+  //         });
+  //         console.log("User role set to:", userRole);
+  //       } catch (error) {
+  //         console.error("Error updating user role metadata:", error);
+  //       }
+  //     }
+  //   };
+
+  //   updateUserRoleMetadata();
+  // }, [user, userRole]);
+
+useEffect(() => {
+  const updateUserRoleMetadata = async () => {
+    if (isSignedIn && user) {
+      let role = user.unsafeMetadata?.role;
+      if (!role) {
+        // Try to get from localStorage
+        role = localStorage.getItem("userRole");
+        if (role) {
           await user.update({
             unsafeMetadata: {
               ...user.unsafeMetadata,
-              role: userRole,
+              role,
             },
           });
-          console.log("User role set to:", userRole);
-        } catch (error) {
-          console.error("Error updating user role metadata:", error);
+          localStorage.removeItem("userRole");
         }
       }
-    };
-
-    updateUserRoleMetadata();
-  }, [user, userRole]);
+    }
+  };
+  updateUserRoleMetadata();
+}, [isSignedIn, user]);
 
   const handleCaptchaVerify = async (token: string) => {
     setCaptchaToken(token);
@@ -196,13 +220,13 @@ export default function ProtectedClerkAuth({
         <>
           {mode === "signIn" ? (
             <SignIn
-              redirectUrl={redirectUrl}
+              fallbackRedirectUrl={redirectUrl}
               signUpUrl={signUpUrl}
               afterSignInUrl={redirectUrl}
             />
           ) : (
             <SignUp
-              redirectUrl={redirectUrl}
+              fallbackRedirectUrl={redirectUrl}
               signInUrl={signInUrl}
               afterSignUpUrl={redirectUrl}
             />

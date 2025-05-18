@@ -287,6 +287,7 @@ export default function Home() {
 
   const handleRoleSelect = (role: "coach" | "athlete") => {
     setRoleModalOpen(false);
+    localStorage.setItem("userRole", role);
     router.push(`/sign-in?role=${role}`);
   };
 
@@ -658,7 +659,7 @@ export default function Home() {
               className="w-full py-6"
               onClick={() => handleRoleSelect("coach")}
             >
-              Continue as Coach
+              Continue as Coach 
             </Button>
             <Button 
               className="w-full py-6" 

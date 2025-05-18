@@ -13,43 +13,17 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle, CheckCircle2 } from "lucide-react"
 import { fadeIn, staggerContainer, scaleIn, cardHover, buttonHover } from "@/lib/animations"
 import { useUser } from "@clerk/nextjs"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { UserButton } from "@clerk/nextjs"
 
 // Mock authentication hook - in a real app, this would connect to your backend
-const useAuth = () => {
-  const [user, setUser] = useState<{
-    name: string
-    email: string
-    role: "athlete" | "coach" | "admin"
-  } | null>(null)
-
-  useEffect(() => {
-    // Simulate API call to get user data
-    const getUser = async () => {
-      await new Promise((resolve) => setTimeout(resolve, 300))
-
-      // For demo purposes, we'll use URL parameters to switch roles
-      const params = new URLSearchParams(window.location.search)
-      const role = (params.get("role") as "athlete" | "coach" | "admin") || "athlete"
-
-      setUser({
-        name: "John Doe",
-        email: "john@example.com",
-        role,
-      })
-    }
-
-    getUser()
-  }, [])
-
-  return { user }
-}
 
 export default function Dashboard() {
   const { user, isLoaded, isSignedIn } = useUser()
   const router = useRouter()
   const [userRole, setUserRole] = useState<string | null>(null)
+  const searchParams = useSearchParams();
+  const param = searchParams.get('role');
 
   useEffect(() => {
     // If the user is not signed in and the clerk data is loaded, redirect to home
@@ -62,6 +36,12 @@ export default function Dashboard() {
     if (user) {
       const role = user.unsafeMetadata?.role as string | undefined
       setUserRole(role || null)
+    }
+
+    if (isSignedIn && user && !user.unsafeMetadata?.role) {
+      console.log('im logged but no role');
+      
+      router.replace("/set-role");
     }
   }, [isLoaded, isSignedIn, user, router])
 
@@ -79,7 +59,7 @@ export default function Dashboard() {
     return null
   }
 
-  console.log("user ----->", userRole);
+  console.log("user ----->", user, param);
   
 
   return (
