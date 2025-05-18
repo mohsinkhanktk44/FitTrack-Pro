@@ -13,7 +13,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle, CheckCircle2 } from "lucide-react"
 import { fadeIn, staggerContainer, scaleIn, cardHover, buttonHover } from "@/lib/animations"
 import { useUser } from "@clerk/nextjs"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { UserButton } from "@clerk/nextjs"
 
 // Mock authentication hook - in a real app, this would connect to your backend
@@ -22,8 +22,6 @@ export default function Dashboard() {
   const { user, isLoaded, isSignedIn } = useUser()
   const router = useRouter()
   const [userRole, setUserRole] = useState<string | null>(null)
-  const searchParams = useSearchParams();
-  const param = searchParams.get('role');
 
   useEffect(() => {
     // If the user is not signed in and the clerk data is loaded, redirect to home
@@ -58,9 +56,6 @@ export default function Dashboard() {
   if (!isSignedIn) {
     return null
   }
-
-  console.log("user ----->", user, param);
-  
 
   return (
     <div className="min-h-screen">
