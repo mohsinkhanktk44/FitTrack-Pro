@@ -8,6 +8,15 @@ import { ArrowRight, BarChart2, Compass, Dumbbell, Zap } from "lucide-react";
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
 import { AuthModal } from "@/components/registration-modal";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { useRouter } from "next/navigation";
+
 // Animation variants
 const fadeIn = {
   hidden: { opacity: 0, y: 20 },
@@ -273,21 +282,29 @@ const Testimonial = ({ quote, author, role, delay = 0 }: TestimonialProps) => {
 };
 
 export default function Home() {
+  const [roleModalOpen, setRoleModalOpen] = useState(false);
+  const router = useRouter();
 
+  const handleRoleSelect = (role: "coach" | "athlete") => {
+    setRoleModalOpen(false);
+    router.push(`/sign-in?role=${role}`);
+  };
 
   const heroRef = useRef(null);
   const { scrollYProgress } = useScroll();
   const opacity = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
   const scale = useTransform(scrollYProgress, [0, 0.2], [1, 0.95]);
   const [isModalOpen, setIsModalOpen] = useState(false)
-const openModal = () => {
-  console.log("openmodal",isModalOpen,"test")
+
+  const openModal = () => {
+    console.log("openmodal",isModalOpen,"test")
     setIsModalOpen(true)
   }
 
   const closeModal = () => {
     setIsModalOpen(false)
   }
+
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
@@ -347,9 +364,9 @@ const openModal = () => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <Button asChild size="lg" className="text-lg" onClick={openModal}>
+                  <Button asChild size="lg" className="text-lg" onClick={() => setRoleModalOpen(true)}>
                     <Link href="/">
-                      Login / Sign Up <ArrowRight className="ml-2 h-5 w-5"   />
+                      Login / Sign Up →
                     </Link>
                   </Button>
                 </motion.div>
@@ -627,6 +644,32 @@ const openModal = () => {
       <Footer />
       <AuthModal isOpen={isModalOpen} onClose={closeModal} />
 
+      {/* Role Selection Modal */}
+      <Dialog open={roleModalOpen} onOpenChange={setRoleModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl">Choose your role</DialogTitle>
+            <DialogDescription>
+              Select how you want to use NotionCoach
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-4 py-4">
+            <Button 
+              className="w-full py-6"
+              onClick={() => handleRoleSelect("coach")}
+            >
+              Continue as Coach
+            </Button>
+            <Button 
+              className="w-full py-6" 
+              variant="outline"
+              onClick={() => handleRoleSelect("athlete")}
+            >
+              Continue as Athlete
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

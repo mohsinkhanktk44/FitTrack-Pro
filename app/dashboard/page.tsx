@@ -12,6 +12,9 @@ import { AdminView } from "@/components/dashboard/admin-view"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle, CheckCircle2 } from "lucide-react"
 import { fadeIn, staggerContainer, scaleIn, cardHover, buttonHover } from "@/lib/animations"
+import { useUser } from "@clerk/nextjs"
+import { useRouter } from "next/navigation"
+import { UserButton } from "@clerk/nextjs"
 
 // Mock authentication hook - in a real app, this would connect to your backend
 const useAuth = () => {
@@ -43,257 +46,90 @@ const useAuth = () => {
   return { user }
 }
 
-export default function DashboardPage() {
-  const { user } = useAuth()
-  const [stravaConnected, setStravaConnected] = useState(true)
-  const [notionConnected, setNotionConnected] = useState(false)
-  const [lastSync, setLastSync] = useState<{
-    timestamp: string
-    success: boolean
-    message?: string
-  }>({
-    timestamp: "2023-05-10T14:30:00Z",
-    success: true,
-  })
+export default function Dashboard() {
+  const { user, isLoaded, isSignedIn } = useUser()
+  const router = useRouter()
+  const [userRole, setUserRole] = useState<string | null>(null)
 
-  const [subscription, setSubscription] = useState({
-    plan: "Pro",
-    validUntil: "2023-12-31",
-  })
+  useEffect(() => {
+    // If the user is not signed in and the clerk data is loaded, redirect to home
+    if (isLoaded && !isSignedIn) {
+      router.push('/')
+      return
+    }
 
-  const [isSyncing, setIsSyncing] = useState(false)
-  const headerRef = useRef(null)
-  const isHeaderInView = useInView(headerRef, { once: true })
+    // Get user role from metadata
+    if (user) {
+      const role = user.unsafeMetadata?.role as string | undefined
+      setUserRole(role || null)
+    }
+  }, [isLoaded, isSignedIn, user, router])
 
-  const handleSync = () => {
-    // In a real app, this would call your backend to trigger a sync
-    setIsSyncing(true)
+  // Render loading state while user data is loading
+  if (!isLoaded) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    )
+  }
 
-    setTimeout(() => {
-      setLastSync({
-        timestamp: new Date().toISOString(),
-        success: Math.random() > 0.3, // Randomly succeed or fail for demo
-        message: Math.random() > 0.3 ? undefined : "Failed to sync with Notion",
-      })
-      setIsSyncing(false)
-    }, 2000)
+  // If user is not logged in, this will show briefly before redirect
+  if (!isSignedIn) {
+    return null
   }
 
   return (
-    <motion.div initial="hidden" animate="visible" variants={staggerContainer} className="space-y-6">
-      <motion.div ref={headerRef} variants={fadeIn} className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        {user?.role === "athlete" && (
-          <motion.div variants={buttonHover} initial="rest" whileHover="hover" whileTap="tap">
-            <Button onClick={handleSync} disabled={isSyncing}>
-              {isSyncing ? (
-                <>
-                  <svg
-                    className="mr-2 h-4 w-4 animate-spin"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
-                  Syncing...
-                </>
-              ) : (
-                "Sync Now"
-              )}
-            </Button>
-          </motion.div>
-        )}
-      </motion.div>
+    <div className="min-h-screen">
+      {/* Header with user button */}
+      <header className="bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <h1 className="text-xl font-bold">NotionCoach Dashboard</h1>
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-gray-600">
+                {userRole ? `Logged in as ${userRole}` : 'User'}
+              </span>
+              <UserButton afterSignOutUrl="/" />
+            </div>
+          </div>
+        </div>
+      </header>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {/* Connection Status */}
-        <motion.div variants={scaleIn}>
-          <motion.div variants={cardHover} initial="rest" whileHover="hover" transition={{ duration: 0.3 }}>
-            <Card>
-              <CardHeader>
-                <CardTitle>Connections</CardTitle>
-                <CardDescription>Your integration status</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5, delay: 0.2 }}
-                  className="flex items-center justify-between"
-                >
-                  <span>Strava</span>
-                  {stravaConnected ? (
-                    <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                      Connected
-                    </Badge>
-                  ) : (
-                    <Button variant="outline" size="sm">
-                      Connect
-                    </Button>
-                  )}
-                </motion.div>
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5, delay: 0.3 }}
-                  className="flex items-center justify-between"
-                >
-                  <span>Notion</span>
-                  {notionConnected ? (
-                    <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                      Connected
-                    </Badge>
-                  ) : (
-                    <motion.div variants={buttonHover} initial="rest" whileHover="hover" whileTap="tap">
-                      <Button variant="outline" size="sm">
-                        Connect
-                      </Button>
-                    </motion.div>
-                  )}
-                </motion.div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </motion.div>
-
-        {/* Last Sync */}
-        <motion.div variants={scaleIn} transition={{ delay: 0.1 }}>
-          <motion.div variants={cardHover} initial="rest" whileHover="hover" transition={{ duration: 0.3 }}>
-            <Card>
-              <CardHeader>
-                <CardTitle>Last Sync</CardTitle>
-                <CardDescription>{new Date(lastSync.timestamp).toLocaleString()}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <AnimatePresence mode="wait">
-                  {lastSync.success ? (
-                    <motion.div
-                      key="success"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      transition={{ duration: 0.3 }}
-                      className="flex items-center text-green-600"
-                    >
-                      <CheckCircle2 className="mr-2 h-5 w-5" />
-                      <span>Sync completed successfully</span>
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key="error"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <Alert variant="destructive">
-                        <AlertCircle className="h-4 w-4" />
-                        <AlertTitle>Sync Failed</AlertTitle>
-                        <AlertDescription>{lastSync.message || "An error occurred during sync"}</AlertDescription>
-                      </Alert>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </motion.div>
-
-        {/* Subscription */}
-        <motion.div variants={scaleIn} transition={{ delay: 0.2 }}>
-          <motion.div variants={cardHover} initial="rest" whileHover="hover" transition={{ duration: 0.3 }}>
-            <Card>
-              <CardHeader>
-                <CardTitle>Subscription</CardTitle>
-                <CardDescription>Your current plan</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5, delay: 0.2 }}
-                  className="flex items-center justify-between"
-                >
-                  <span>Plan</span>
-                  <Badge>{subscription.plan}</Badge>
-                </motion.div>
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5, delay: 0.3 }}
-                  className="flex items-center justify-between"
-                >
-                  <span>Valid Until</span>
-                  <span>{new Date(subscription.validUntil).toLocaleDateString()}</span>
-                </motion.div>
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.4 }}
-                  className="flex gap-2"
-                >
-                  <motion.div variants={buttonHover} initial="rest" whileHover="hover" whileTap="tap">
-                    <Button variant="outline" size="sm">
-                      Extend
-                    </Button>
-                  </motion.div>
-                  <motion.div variants={buttonHover} initial="rest" whileHover="hover" whileTap="tap">
-                    <Button variant="outline" size="sm">
-                      Change Plan
-                    </Button>
-                  </motion.div>
-                  <motion.div variants={buttonHover} initial="rest" whileHover="hover" whileTap="tap">
-                    <Button variant="outline" size="sm">
-                      Cancel
-                    </Button>
-                  </motion.div>
-                </motion.div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </motion.div>
-      </div>
-
-      {/* Role-specific content */}
-      <motion.div variants={fadeIn} transition={{ delay: 0.3 }}>
-        {user?.role === "athlete" && <AthleteView />}
-        {user?.role === "coach" && <CoachView />}
-        {user?.role === "admin" && (
-          <Tabs defaultValue="metrics" className="mt-6">
-            <TabsList>
-              <TabsTrigger value="metrics">Metrics & Stats</TabsTrigger>
-              <TabsTrigger value="users">Users</TabsTrigger>
-              <TabsTrigger value="subscriptions">Subscriptions</TabsTrigger>
-              <TabsTrigger value="logs">Sync Logs</TabsTrigger>
-            </TabsList>
-            <TabsContent value="metrics">
-              <AdminView activeTab="metrics" />
-            </TabsContent>
-            <TabsContent value="users">
-              <AdminView activeTab="users" />
-            </TabsContent>
-            <TabsContent value="subscriptions">
-              <AdminView activeTab="subscriptions" />
-            </TabsContent>
-            <TabsContent value="logs">
-              <AdminView activeTab="logs" />
-            </TabsContent>
-          </Tabs>
-        )}
-      </motion.div>
-    </motion.div>
+      {/* Main content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="bg-white shadow rounded-lg p-6">
+          <h2 className="text-2xl font-bold mb-6">Welcome, {user?.firstName || 'User'}!</h2>
+          
+          {/* Show content based on user role */}
+          {userRole === 'coach' ? (
+            <div>
+              <p className="mb-4">You are logged in as a coach. Here you can manage your athletes and analyze their workouts.</p>
+              <Button onClick={() => router.push('/dashboard/coach')}>
+                Go to Coach Dashboard
+              </Button>
+            </div>
+          ) : userRole === 'athlete' ? (
+            <div>
+              <p className="mb-4">You are logged in as an athlete. Here you can view and sync your workouts.</p>
+              <Button onClick={() => router.push('/dashboard/athlete')}>
+                Go to Athlete Dashboard
+              </Button>
+            </div>
+          ) : (
+            <div>
+              <p className="text-yellow-600 mb-4">
+                Your role is not set. Please contact support or sign out and sign in again with a specific role.
+              </p>
+              <div className="flex space-x-4">
+                <Button onClick={() => router.push('/')}>
+                  Go Home
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      </main>
+    </div>
   )
 }
