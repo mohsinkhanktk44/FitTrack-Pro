@@ -79,6 +79,9 @@ export default function Dashboard() {
     return null
   }
 
+  console.log("user ----->", userRole);
+  
+
   return (
     <div className="min-h-screen">
       {/* Header with user button */}
@@ -86,12 +89,12 @@ export default function Dashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <h1 className="text-xl font-bold">NotionCoach Dashboard</h1>
-            <div className="flex items-center gap-4">
+            {/* <div className="flex items-center gap-4">
               <span className="text-sm text-gray-600">
                 {userRole ? `Logged in as ${userRole}` : 'User'}
               </span>
               <UserButton afterSignOutUrl="/" />
-            </div>
+            </div> */}
           </div>
         </div>
       </header>
@@ -105,27 +108,27 @@ export default function Dashboard() {
           {userRole === 'coach' ? (
             <div>
               <p className="mb-4">You are logged in as a coach. Here you can manage your athletes and analyze their workouts.</p>
-              <Button onClick={() => router.push('/dashboard/coach')}>
+              {/* <Button onClick={() => router.push('/dashboard/coach')}>
                 Go to Coach Dashboard
-              </Button>
+              </Button> */}
             </div>
           ) : userRole === 'athlete' ? (
             <div>
               <p className="mb-4">You are logged in as an athlete. Here you can view and sync your workouts.</p>
-              <Button onClick={() => router.push('/dashboard/athlete')}>
+              {/* <Button onClick={() => router.push('/dashboard/athlete')}>
                 Go to Athlete Dashboard
-              </Button>
+              </Button> */}
             </div>
           ) : (
             <div>
               <p className="text-yellow-600 mb-4">
                 Your role is not set. Please contact support or sign out and sign in again with a specific role.
               </p>
-              <div className="flex space-x-4">
+              {/* <div className="flex space-x-4">
                 <Button onClick={() => router.push('/')}>
                   Go Home
                 </Button>
-              </div>
+              </div> */}
             </div>
           )}
         </div>

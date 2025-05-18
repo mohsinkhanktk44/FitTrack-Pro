@@ -80,7 +80,7 @@ export function Header() {
           >
             <ModeToggle />
           </motion.div>
-          <motion.div
+          {/* <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.5 }}
@@ -90,10 +90,10 @@ export function Header() {
             <Button>
             <SignedOut>
                 <SignInButton />
-                {/* <SignUpButton /> */}
+                <SignUpButton />
               </SignedOut>
             </Button>
-          </motion.div>
+          </motion.div> */}
         </nav>
 
         {/* Mobile Menu Button */}

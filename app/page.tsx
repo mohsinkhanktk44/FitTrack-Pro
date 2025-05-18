@@ -625,7 +625,7 @@ export default function Home() {
                   whileTap={{ scale: 0.95 }}
                   className="pt-4"
                 >
-                  <Button
+                  {/* <Button
                     asChild
                     size="lg"
                     variant="secondary"
@@ -634,7 +634,7 @@ export default function Home() {
                     <Link href="/login">
                       Get Started <ArrowRight className="ml-2 h-5 w-5" />
                     </Link>
-                  </Button>
+                  </Button> */}
                 </motion.div>
               </motion.div>
             </motion.div>

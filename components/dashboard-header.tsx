@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { ModeToggle } from "@/components/mode-toggle"
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import Link from "next/link";
+import { ModeToggle } from "@/components/mode-toggle";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,10 +11,30 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Bell, LogOut, Settings, User } from "lucide-react"
+} from "@/components/ui/dropdown-menu";
+import { Bell, LogOut, Settings, User } from "lucide-react";
+import { useEffect, useState } from "react";
+import { UserButton, useUser } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 
 export function DashboardHeader() {
+  const { user, isLoaded, isSignedIn } = useUser();
+  const router = useRouter();
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    // If the user is not signed in and the clerk data is loaded, redirect to home
+    if (isLoaded && !isSignedIn) {
+      router.push("/");
+      return;
+    }
+
+    // Get user role from metadata
+    if (user) {
+      const role = user.unsafeMetadata?.role as string | undefined;
+      setUserRole(role || null);
+    }
+  }, [isLoaded, isSignedIn, user, router]);
   return (
     <header className="sticky top-0 z-40 border-b bg-background">
       <div className="container flex h-16 items-center justify-between py-4 px-4">
@@ -30,7 +50,13 @@ export function DashboardHeader() {
             <span className="sr-only">Notifications</span>
           </Button>
           <ModeToggle />
-          <DropdownMenu>
+           <div className="flex items-center gap-4">
+              <span className="text-sm text-gray-600">
+                {userRole ? `Logged in as ${userRole}` : 'User'}
+              </span>
+              <UserButton afterSignOutUrl="/" />
+            </div>
+          {/* <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                 <Avatar className="h-8 w-8">
@@ -62,9 +88,9 @@ export function DashboardHeader() {
                 </Link>
               </DropdownMenuItem>
             </DropdownMenuContent>
-          </DropdownMenu>
+          </DropdownMenu> */}
         </div>
       </div>
     </header>
-  )
+  );
 }

@@ -18,7 +18,7 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState("")
-  const [activeTab, setActiveTab] = useState("profile")
+  const [activeTab, setActiveTab] = useState("notifications")
 
   const [profile, setProfile] = useState({
     name: "John Doe",
@@ -88,7 +88,7 @@ export default function SettingsPage() {
 
       <Tabs defaultValue="profile" value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="profile">Profile</TabsTrigger>
+          {/* <TabsTrigger value="profile">Profile</TabsTrigger> */}
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
           <TabsTrigger value="connections">Connections</TabsTrigger>
         </TabsList>

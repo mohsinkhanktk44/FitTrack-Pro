@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 
 interface SidebarProps {
-  userRole?: "athlete" | "coach" | "admin"
+  userRole?: "athlete" | "coach"
 }
 
 export function Sidebar({ userRole = "athlete" }: SidebarProps) {
@@ -23,11 +23,11 @@ export function Sidebar({ userRole = "athlete" }: SidebarProps) {
       href: "/dashboard",
       icon: Home,
     },
-    {
-      title: "Profile",
-      href: "/dashboard/profile",
-      icon: User,
-    },
+    // {
+    //   title: "Profile",
+    //   href: "/dashboard/profile",
+    //   icon: User,
+    // },
     {
       title: "Settings",
       href: "/dashboard/settings",
