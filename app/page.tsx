@@ -285,26 +285,26 @@ export default function Home() {
   const [roleModalOpen, setRoleModalOpen] = useState(false);
   const router = useRouter();
 
-  const handleRoleSelect = (role: "coach" | "athlete") => {
-    setRoleModalOpen(false);
-    localStorage.setItem("userRole", role);
-    router.push(`/sign-in?role=${role}`);
+  const handleRoleSelect = () => {
+    // setRoleModalOpen(false);
+    // localStorage.setItem("userRole", role);
+    router.push(`/sign-in`);
   };
 
   const heroRef = useRef(null);
   const { scrollYProgress } = useScroll();
   const opacity = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
   const scale = useTransform(scrollYProgress, [0, 0.2], [1, 0.95]);
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  // const [isModalOpen, setIsModalOpen] = useState(false)
 
-  const openModal = () => {
-    console.log("openmodal",isModalOpen,"test")
-    setIsModalOpen(true)
-  }
+  // const openModal = () => {
+  //   console.log("openmodal",isModalOpen,"test")
+  //   setIsModalOpen(true)
+  // }
 
-  const closeModal = () => {
-    setIsModalOpen(false)
-  }
+  // const closeModal = () => {
+  //   setIsModalOpen(false)
+  // }
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -365,8 +365,8 @@ export default function Home() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <Button asChild size="lg" className="text-lg" onClick={() => setRoleModalOpen(true)}>
-                    <Link href="/">
+                  <Button asChild size="lg" className="text-lg" >
+                    <Link href="/sign-in">
                       Login / Sign Up →
                     </Link>
                   </Button>
@@ -643,10 +643,10 @@ export default function Home() {
         </section>
       </main>
       <Footer />
-      <AuthModal isOpen={isModalOpen} onClose={closeModal} />
+      {/* <AuthModal isOpen={isModalOpen} onClose={closeModal} /> */}
 
       {/* Role Selection Modal */}
-      <Dialog open={roleModalOpen} onOpenChange={setRoleModalOpen}>
+      {/* <Dialog open={roleModalOpen} onOpenChange={setRoleModalOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-xl">Choose your role</DialogTitle>
@@ -670,7 +670,7 @@ export default function Home() {
             </Button>
           </div>
         </DialogContent>
-      </Dialog>
+      </Dialog> */}
     </div>
   );
 }
