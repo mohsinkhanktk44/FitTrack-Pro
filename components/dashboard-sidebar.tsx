@@ -28,31 +28,31 @@ export function Sidebar({ userRole = "athlete" }: SidebarProps) {
     //   href: "/dashboard/profile",
     //   icon: User,
     // },
-    {
-      title: "Settings",
-      href: "/dashboard/settings",
-      icon: Settings,
-    },
+    // {
+    //   title: "Settings",
+    //   href: "/dashboard/settings",
+    //   icon: Settings,
+    // },
   ]
 
   // Role-specific navigation items
   const roleItems = {
     athlete: [
-      {
-        title: "Activities",
-        href: "/dashboard/activities",
-        icon: Activity,
-      },
-      {
-        title: "Calendar",
-        href: "/dashboard/calendar",
-        icon: Calendar,
-      },
-      {
-        title: "Analytics",
-        href: "/dashboard/analytics",
-        icon: BarChart2,
-      },
+      // {
+      //   title: "Activities",
+      //   href: "/dashboard/activities",
+      //   icon: Activity,
+      // },
+      // {
+      //   title: "Calendar",
+      //   href: "/dashboard/calendar",
+      //   icon: Calendar,
+      // },
+      // {
+      //   title: "Analytics",
+      //   href: "/dashboard/analytics",
+      //   icon: BarChart2,
+      // },
     ],
     coach: [
       {
