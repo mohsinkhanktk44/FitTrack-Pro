@@ -3,9 +3,9 @@ import { NextRequest, NextResponse } from "next/server";
 // reCAPTCHA verification API route
 export async function POST(request: NextRequest) {
   try {
-    // Set to false to actually verify with Google
-    const skipInDev = false;
-    const isDev = true;
+    // Use environment variables or fallback
+    const skipInDev = process.env.NEXT_PUBLIC_SKIP_RECAPTCHA_IN_DEV === "true";
+    const isDev = process.env.NODE_ENV === "development";
     
     // Skip verification in development mode if flag is set
     if (isDev && skipInDev) {
@@ -21,16 +21,22 @@ export async function POST(request: NextRequest) {
     }
     
     // Get the reCAPTCHA token from the request body
-    const { token } = await request.json();
+    const body = await request.json().catch(err => {
+      console.error("Failed to parse request body:", err);
+      return {};
+    });
+    
+    const { token } = body;
 
     if (!token) {
+      console.error("Missing reCAPTCHA token in request");
       return NextResponse.json(
         { success: false, error: "Missing reCAPTCHA token" },
         { status: 400 }
       );
     }
 
-    // Get the secret key from environment variables or use hardcoded test key for development
+    // Get the secret key from environment variables with fallback
     const secretKey = process.env.RECAPTCHA_SECRET_KEY || "6LcugT4rAAAAAOOwEfpc67IBx8qc_NshZfyQtcyI";
 
     console.log("Verifying reCAPTCHA token with Google...");
@@ -55,10 +61,21 @@ export async function POST(request: NextRequest) {
         "Content-Type": "application/x-www-form-urlencoded",
       },
       body: formData.toString(),
+    }).catch(error => {
+      console.error("Failed to contact Google's reCAPTCHA API:", error);
+      throw new Error("reCAPTCHA service unavailable");
     });
+    
+    if (!verificationResponse.ok) {
+      console.error(`Google reCAPTCHA API error: ${verificationResponse.status} ${verificationResponse.statusText}`);
+      throw new Error(`Google reCAPTCHA API error: ${verificationResponse.status}`);
+    }
 
     // Parse the response from Google
-    const verificationResult = await verificationResponse.json();
+    const verificationResult = await verificationResponse.json().catch(error => {
+      console.error("Failed to parse Google's reCAPTCHA response:", error);
+      throw new Error("Invalid response from reCAPTCHA service");
+    });
     
     console.log("Google reCAPTCHA response:", JSON.stringify(verificationResult));
 
@@ -84,9 +101,11 @@ export async function POST(request: NextRequest) {
     // Return the verification result for other cases
     return NextResponse.json(verificationResult);
   } catch (error) {
-    console.error("reCAPTCHA verification failed:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    console.error("reCAPTCHA verification failed:", errorMessage);
+    
     return NextResponse.json(
-      { success: false, error: "Verification failed" },
+      { success: false, error: errorMessage || "Verification failed" },
       { status: 500 }
     );
   }
