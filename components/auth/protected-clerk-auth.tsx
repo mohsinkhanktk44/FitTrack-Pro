@@ -25,12 +25,12 @@ export default function ProtectedClerkAuth({
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationError, setVerificationError] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
-  const isDevelopment = true; // Force development mode
-  const skipCaptchaInDev = false; // Don't skip - actually verify captcha
+  const isDevelopment = process.env.NODE_ENV === "development";
+  const skipCaptchaInDev = process.env.NEXT_PUBLIC_SKIP_RECAPTCHA_IN_DEV === "true";
   const router = useRouter();
   
   // Clerk hooks
-  const { user,isSignedIn } = useUser();
+  const { user, isSignedIn } = useUser();
   const { signOut } = useClerk();
 
   // Handle component mounting to prevent hydration errors
@@ -38,57 +38,53 @@ export default function ProtectedClerkAuth({
     setMounted(true);
   }, []);
 
-  // In development, we can skip the captcha verification
+  // In development, we can skip the captcha verification if configured
   useEffect(() => {
     if (isDevelopment && skipCaptchaInDev) {
       setCaptchaVerified(true);
     }
   }, [isDevelopment, skipCaptchaInDev]);
 
-  // Set user role when the user is created/updated
-  console.log(userRole,'url-e-----------');
-  
-  // useEffect(() => {
-  //   const updateUserRoleMetadata = async () => {
-  //     if (user && userRole) {
-  //       try {
-  //         await user.update({
-  //           unsafeMetadata: {
-  //             ...user.unsafeMetadata,
-  //             role: userRole,
-  //           },
-  //         });
-  //         console.log("User role set to:", userRole);
-  //       } catch (error) {
-  //         console.error("Error updating user role metadata:", error);
-  //       }
-  //     }
-  //   };
-
-  //   updateUserRoleMetadata();
-  // }, [user, userRole]);
-
-useEffect(() => {
-  const updateUserRoleMetadata = async () => {
-    if (isSignedIn && user) {
-      let role = user.unsafeMetadata?.role;
-      if (!role) {
-        // Try to get from localStorage
-        role = localStorage.getItem("userRole");
-        if (role) {
-          await user.update({
-            unsafeMetadata: {
-              ...user.unsafeMetadata,
-              role,
-            },
-          });
-          localStorage.removeItem("userRole");
+  // Handle user role setting
+  useEffect(() => {
+    const updateUserRoleMetadata = async () => {
+      if (isSignedIn && user) {
+        let role = user.unsafeMetadata?.role;
+        if (!role && userRole) {
+          try {
+            await user.update({
+              unsafeMetadata: {
+                ...user.unsafeMetadata,
+                role: userRole,
+              },
+            });
+            console.log("User role set to:", userRole);
+          } catch (error) {
+            console.error("Error updating user role metadata:", error);
+            // Store in localStorage as fallback
+            localStorage.setItem("userRole", userRole);
+          }
+        } else if (!role) {
+          // Try to get from localStorage
+          const storedRole = localStorage.getItem("userRole");
+          if (storedRole) {
+            try {
+              await user.update({
+                unsafeMetadata: {
+                  ...user.unsafeMetadata,
+                  role: storedRole,
+                },
+              });
+              localStorage.removeItem("userRole");
+            } catch (error) {
+              console.error("Error updating user role from localStorage:", error);
+            }
+          }
         }
       }
-    }
-  };
-  updateUserRoleMetadata();
-}, [isSignedIn, user]);
+    };
+    updateUserRoleMetadata();
+  }, [isSignedIn, user, userRole]);
 
   const handleCaptchaVerify = async (token: string) => {
     setCaptchaToken(token);
@@ -104,7 +100,6 @@ useEffect(() => {
       }
 
       // Verify the token with our backend
-      // Always use the main API endpoint since we want to test real verification
       const response = await fetch("/api/verify-recaptcha", {
         method: "POST",
         headers: {
@@ -112,6 +107,10 @@ useEffect(() => {
         },
         body: JSON.stringify({ token }),
       });
+
+      if (!response.ok) {
+        throw new Error(`Verification API error: ${response.status}`);
+      }
 
       const result = await response.json();
       console.log("Verification result:", result);
@@ -137,13 +136,15 @@ useEffect(() => {
       } else {
         // Verification failed
         setVerificationError(
-          "reCAPTCHA verification failed. Please try again."
+          result.error || "reCAPTCHA verification failed. Please try again."
         );
       }
     } catch (error) {
       console.error("Error verifying reCAPTCHA:", error);
       setVerificationError(
-        "An error occurred during verification. Please try again."
+        error instanceof Error 
+          ? `Verification error: ${error.message}` 
+          : "An error occurred during verification. Please try again."
       );
     } finally {
       setIsVerifying(false);
