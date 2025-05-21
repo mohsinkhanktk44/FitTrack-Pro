@@ -1,20 +1,9 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
-import { motion, useInView, AnimatePresence } from "framer-motion"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { AthleteView } from "@/components/dashboard/athlete-view"
-import { CoachView } from "@/components/dashboard/coach-view"
-import { AdminView } from "@/components/dashboard/admin-view"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { AlertCircle, CheckCircle2 } from "lucide-react"
-import { fadeIn, staggerContainer, scaleIn, cardHover, buttonHover } from "@/lib/animations"
+import { useState, useEffect } from "react"
 import { useUser } from "@clerk/nextjs"
 import { useRouter } from "next/navigation"
-import { UserButton } from "@clerk/nextjs"
+import CoachDashboard from "@/components/coach-dashboard"
 
 // Mock authentication hook - in a real app, this would connect to your backend
 
@@ -51,11 +40,22 @@ export default function Dashboard() {
       </div>
     )
   }
-
   // If user is not logged in, this will show briefly before redirect
   if (!isSignedIn) {
     return null
   }
+  const role = user.unsafeMetadata?.role as string | undefined;
+
+  if (!role) {
+    // Still no role, don't render anything (because SelectRole component may be handling it)
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div>Loading Role Selection...</div>
+      </div>
+    );
+  }
+
 
   return (
     <div className="min-h-screen">
@@ -82,10 +82,11 @@ export default function Dashboard() {
           {/* Show content based on user role */}
           {userRole === 'coach' ? (
             <div>
-              <p className="mb-4">You are logged in as a coach. Here you can manage your athletes and analyze their workouts.</p>
-              {/* <Button onClick={() => router.push('/dashboard/coach')}>
+              {/* <p className="mb-4">You are logged in as a coach. Here you can manage your athletes and analyze their workouts.</p>
+              <Button onClick={() => router.push('/dashboard/coach')}>
                 Go to Coach Dashboard
               </Button> */}
+              <CoachDashboard/>
             </div>
           ) : userRole === 'athlete' ? (
             <div>
