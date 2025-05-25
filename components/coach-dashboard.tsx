@@ -62,6 +62,7 @@ export default function CoachDashboard() {
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false)
   const [inviteLink, setInviteLink] = useState("")
   const [linkCopied, setLinkCopied] = useState(false)
+  const clientId = process.env.NEXT_PUBLIC_STRAVA_CLIENT_ID;
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
@@ -145,7 +146,9 @@ export default function CoachDashboard() {
                   </svg>
                   Strava
                 </span>
-                <Badge variant={true ? "default" : "destructive"} className="px-2 py-1">
+                <a
+                 href={`https://www.strava.com/oauth/authorize?client_id=${process.env.NEXT_PUBLIC_STRAVA_CLIENT_ID}&response_type=code&redirect_uri=${process.env.NEXT_PUBLIC_STRAVA_REDIRECT_URI}&approval_prompt=auto&scope=read,activity:read`} >
+                <Badge variant={true ? "default" : "destructive"} className="px-2 py-1" >
                   {true ? (
                     <span className="flex items-center">
                       <Check className="mr-1 h-3 w-3" /> Connected
@@ -156,6 +159,7 @@ export default function CoachDashboard() {
                     </span>
                   )}
                 </Badge>
+                </a>
               </div>
               <div className="flex items-center justify-between">
                 <span className="flex items-center">
