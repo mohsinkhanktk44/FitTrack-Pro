@@ -1,21 +1,11 @@
-'use client';
+// app/strava/success/page.tsx
+import { Suspense } from "react";
+import StravaSuccessClient from "./StravaSuccessClient";
 
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect } from 'react';
-
-export default function StravaSuccess() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const access_token = searchParams.get('access_token');
-
-  useEffect(() => {
-    if (access_token) {
-      localStorage.setItem('strava_access_token', access_token);
-      console.log('Access token saved to localStorage!');
-      router.push('/dashboard');
-    
-    }
-  }, [access_token]);
-
-  return <p>Connected to Strava! You can now fetch activities.</p>;
+export default function StravaSuccessPage() {
+  return (
+    <Suspense fallback={<p>Loading...</p>}>
+      <StravaSuccessClient />
+    </Suspense>
+  );
 }
