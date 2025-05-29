@@ -1,16 +1,20 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
+import { isAdminEmail } from '@/lib/admin';
+import { clerkClient } from '@clerk/nextjs/server';
 
 // Define protected routes and their required roles
 const protectedRoutes = [
-  { path: '/dashboard', roles: ['coach', 'athlete'] },
+  { path: '/dashboard', roles: ['coach', 'athlete', 'admin'] },
   { path: '/dashboard/coach', roles: ['coach'] },
   { path: '/dashboard/athlete', roles: ['athlete'] },
+  { path: '/admin', roles: ['admin'] },
   // Add more protected routes as needed
 ];
 
 // Create route matchers for different route types
 const isDashboardRoute = createRouteMatcher(['/dashboard', '/dashboard/(.*)']);
+const isAdminRoute = createRouteMatcher(['/admin', '/admin/(.*)']);
 const isAuthRoute = createRouteMatcher([
   '/sign-in(.*)',
   '/sign-up(.*)',
@@ -33,23 +37,65 @@ export default clerkMiddleware(async (auth, req) => {
   );
   
   // If user isn't signed in and the route is protected
-  if (!userId && isDashboardRoute(req)) {
+  if (!userId && (isDashboardRoute(req) || isAdminRoute(req))) {
     // Redirect to home page
     return NextResponse.redirect(new URL('/', req.url));
   }
   
-  // If user is signed in, check if they have the required role for the route
+  // If user is signed in, check roles and admin access
   if (userId && matchedRoute) {
-    // Get user role from metadata - need to await auth() again to get session data
-    const authData = await auth();
-    // Type assertion for metadata
-    const metadata = authData.sessionClaims?.metadata as { role?: string } | undefined;
-    const userRole = metadata?.role;
-    
-    // If the route requires a specific role and the user doesn't have it
-    if (userRole && !matchedRoute.roles.includes(userRole)) {
-      // Redirect to the main dashboard
-      return NextResponse.redirect(new URL('/dashboard', req.url));
+    try {
+      // Get user data to check if they're an admin
+      const client = await clerkClient();
+      const user = await client.users.getUser(userId);
+      const userEmail = user.emailAddresses[0]?.emailAddress;
+      
+      // Check if user is admin based on email
+      const userIsAdmin = userEmail ? isAdminEmail(userEmail) : false;
+      
+      // Get user role from metadata
+      const authData = await auth();
+      const metadata = authData.sessionClaims?.metadata as { role?: string } | undefined;
+      const userRole = metadata?.role;
+      
+      // Handle admin routes
+      if (isAdminRoute(req)) {
+        if (!userIsAdmin) {
+          // Non-admin trying to access admin routes
+          return NextResponse.redirect(new URL('/dashboard', req.url));
+        }
+        return NextResponse.next();
+      }
+      
+      // Handle regular dashboard routes
+      if (isDashboardRoute(req)) {
+        // If user is admin, only allow access to main dashboard, not coach/athlete specific routes
+        if (userIsAdmin) {
+          if (pathname.includes('/coach') || pathname.includes('/athlete')) {
+            return NextResponse.redirect(new URL('/admin', req.url));
+          }
+          // Allow access to main dashboard for admins
+          if (pathname === '/dashboard') {
+            return NextResponse.redirect(new URL('/admin', req.url));
+          }
+        }
+        
+        // For non-admin users, check role-based access
+        if (userRole && !matchedRoute.roles.includes(userRole)) {
+          // If they don't have the required role, redirect to appropriate page
+          if (userRole === 'coach') {
+            return NextResponse.redirect(new URL('/dashboard/coach', req.url));
+          } else if (userRole === 'athlete') {
+            return NextResponse.redirect(new URL('/dashboard/athlete', req.url));
+          } else {
+            return NextResponse.redirect(new URL('/dashboard', req.url));
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error in middleware:', error);
+      // If there's an error getting user data, redirect to home
+      return NextResponse.redirect(new URL('/', req.url));
     }
   }
   

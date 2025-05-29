@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useUser } from "@clerk/nextjs"
 import { useRouter } from "next/navigation"
 import CoachDashboard from "@/components/coach-dashboard"
+import { isAdminEmail } from "@/lib/admin"
 
 // Mock authentication hook - in a real app, this would connect to your backend
 
@@ -19,8 +20,14 @@ export default function Dashboard() {
       return
     }
 
-    // Get user role from metadata
+    // Check if user is admin and redirect to admin page
     if (user) {
+      const userEmail = user.emailAddresses[0]?.emailAddress
+      if (userEmail && isAdminEmail(userEmail)) {
+        router.push('/admin')
+        return
+      }
+
       const role = user.unsafeMetadata?.role as string | undefined
       setUserRole(role || null)
     }
@@ -44,6 +51,13 @@ export default function Dashboard() {
   if (!isSignedIn) {
     return null
   }
+
+  // Check if user is admin (will redirect in useEffect)
+  const userEmail = user.emailAddresses[0]?.emailAddress
+  if (userEmail && isAdminEmail(userEmail)) {
+    return null // Will redirect to admin page
+  }
+
   const role = user.unsafeMetadata?.role as string | undefined;
 
   if (!role) {

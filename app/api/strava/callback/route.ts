@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
         client_id: STRAVA_CLIENT_ID,
         client_secret: STRAVA_CLIENT_SECRET,
         code,
-        grant_type: 'authorization_code',
+        grant_type: 'refresh_token',
       }),
     });
 

@@ -2,8 +2,9 @@
 
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { UserCircle2 } from "lucide-react";
+import { isAdminEmail } from "@/lib/admin";
 
 export default function SetRolePage() {
   const { user, isSignedIn } = useUser();
@@ -11,7 +12,24 @@ export default function SetRolePage() {
   const [role, setRole] = useState("");
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    // Check if user is admin and redirect to admin page
+    if (user) {
+      const userEmail = user.emailAddresses[0]?.emailAddress;
+      if (userEmail && isAdminEmail(userEmail)) {
+        router.push('/admin');
+        return;
+      }
+    }
+  }, [user, router]);
+
   if (!isSignedIn) return <div>Loading...</div>;
+
+  // Check if user is admin (will redirect in useEffect)
+  const userEmail = user.emailAddresses[0]?.emailAddress;
+  if (userEmail && isAdminEmail(userEmail)) {
+    return null; // Will redirect to admin page
+  }
 
   const handleSetRole = async (e: React.FormEvent) => {
     e.preventDefault();
