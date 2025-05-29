@@ -38,6 +38,7 @@ import {
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/toaster";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
@@ -91,6 +92,7 @@ export default function RootLayout({
               </SignedIn>
             </header> */}
             {children}
+            <Toaster />
           </ThemeProvider>
         </body>
       </html>

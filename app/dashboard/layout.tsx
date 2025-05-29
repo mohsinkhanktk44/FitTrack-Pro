@@ -10,11 +10,20 @@ export default function DashboardLayout({
 }) {
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-      <div className="flex min-h-screen flex-col">
-        <DashboardHeader />
-        <div className="flex flex-1">
+      <div className="flex h-screen overflow-hidden">
+        {/* Sticky Sidebar with full height */}
+        <div className="hidden md:flex md:flex-col md:fixed md:inset-y-0 md:w-64 md:z-50">
           <Sidebar userRole="athlete" />
-          <main className="flex-1 p-4 md:p-6">{children}</main>
+        </div>
+        
+        {/* Main content area */}
+        <div className="flex flex-col flex-1 md:ml-64">
+          <DashboardHeader />
+          <main className="flex-1 overflow-auto bg-gray-50/40 dark:bg-gray-900/40">
+            <div className="container mx-auto p-4 md:p-6 max-w-7xl">
+              {children}
+            </div>
+          </main>
         </div>
       </div>
     </ThemeProvider>
