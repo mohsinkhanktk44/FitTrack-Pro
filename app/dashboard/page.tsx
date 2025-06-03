@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useUser } from "@clerk/nextjs"
+import { useUser, useAuth } from "@clerk/nextjs"
 import { useRouter } from "next/navigation"
 import CoachDashboard from "@/components/coach-dashboard"
 import { isAdminEmail } from "@/lib/admin"
@@ -9,6 +9,7 @@ import { isAdminEmail } from "@/lib/admin"
 // Mock authentication hook - in a real app, this would connect to your backend
 
 export default function Dashboard() {
+  const {getToken} = useAuth()
   const { user, isLoaded, isSignedIn } = useUser()
   const router = useRouter()
   const [userRole, setUserRole] = useState<string | null>(null)
@@ -19,6 +20,13 @@ export default function Dashboard() {
       router.push('/')
       return
     }
+
+    (async () => {
+      const token = await getToken()
+      console.log(token ,'clerk token ------------->')
+    })()
+
+
 
     // Check if user is admin and redirect to admin page
     if (user) {

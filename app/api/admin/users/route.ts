@@ -164,4 +164,67 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    // Get the current user
+    const { userId } = await auth();
+    
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    // Get user details to check if they're an admin
+    const client = await clerkClient();
+    const user = await client.users.getUser(userId);
+    const userEmail = user.emailAddresses[0]?.emailAddress;
+
+    if (!userEmail || !isAdminEmail(userEmail)) {
+      return NextResponse.json(
+        { error: 'Forbidden - Admin access required' },
+        { status: 403 }
+      );
+    }
+
+    // Get the user ID to delete from the request body
+    const { userIdToDelete } = await request.json();
+
+    if (!userIdToDelete) {
+      return NextResponse.json(
+        { error: 'User ID is required' },
+        { status: 400 }
+      );
+    }
+
+    // Get the user to be deleted to check if they're an admin
+    const userToDelete = await client.users.getUser(userIdToDelete);
+    const userToDeleteEmail = userToDelete.emailAddresses[0]?.emailAddress;
+
+    // Prevent deletion of admin users
+    if (userToDeleteEmail && isAdminEmail(userToDeleteEmail)) {
+      return NextResponse.json(
+        { error: 'Cannot delete admin users' },
+        { status: 403 }
+      );
+    }
+
+    // Delete the user
+    await client.users.deleteUser(userIdToDelete);
+
+    return NextResponse.json(
+      { message: 'User deleted successfully' },
+      { status: 200 }
+    );
+
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
 } 
