@@ -36,6 +36,9 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination"
 
+import { useUser } from "@clerk/nextjs"
+import { useRouter } from "next/navigation"
+
 // Extended mock data for athletes with more entries for pagination
 const athletes = [
   { id: 1, name: "John Doe", lastSync: "2023-05-15T14:30:00", stravaConnected: true, notionConnected: true },
@@ -65,8 +68,10 @@ export default function CoachDashboard() {
   const [sortField, setSortField] = useState<"name" | "lastSync">("name")
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc")
   const itemsPerPage = 5
+  const { user, isLoaded, isSignedIn } = useUser()
 
-  const clientId = process.env.NEXT_PUBLIC_STRAVA_CLIENT_ID;
+ const role = user?.unsafeMetadata?.role as string | undefined
+
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
@@ -164,7 +169,7 @@ export default function CoachDashboard() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white">Coach Dashboard</h1>
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white">{ role === "coach" ? "Coach Dashboard" :"Athlete Dashboard" }</h1>
           <p className="text-lg text-gray-600 dark:text-gray-400 mt-2">Manage your athletes and their connections</p>
         </div>
         <Button onClick={generateInviteLink} className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-3 rounded-lg shadow-sm">
@@ -300,7 +305,9 @@ export default function CoachDashboard() {
       </div>
 
       {/* Athletes Table */}
-      <Card className="border-0 shadow-sm bg-white dark:bg-gray-900">
+      {
+        role === "coach" && (
+          <Card className="border-0 shadow-sm bg-white dark:bg-gray-900">
         <CardHeader className="border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
@@ -491,6 +498,9 @@ export default function CoachDashboard() {
           )}
         </CardContent>
       </Card>
+        )
+      }
+    
 
       {/* Invite Link Dialog */}
       <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>

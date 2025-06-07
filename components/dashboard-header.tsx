@@ -17,6 +17,12 @@ import { useEffect, useState } from "react";
 import { UserButton, useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 
+const notifications = [
+  "🏃 You completed a new run session!",
+  "📅 Your coach scheduled a new workout.",
+  "✅ You synced with Notion successfully.",
+];
+
 export function DashboardHeader() {
   const { user, isLoaded, isSignedIn } = useUser();
   const router = useRouter();
@@ -35,6 +41,7 @@ export function DashboardHeader() {
       setUserRole(role || null);
     }
   }, [isLoaded, isSignedIn, user, router]);
+
   return (
     <header className="sticky top-0 z-40 border-b bg-background">
       <div className="container flex h-16 items-center justify-between py-4 px-4">
@@ -44,11 +51,23 @@ export function DashboardHeader() {
           </Link>
         </div>
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" className="relative">
-            <Bell className="h-5 w-5" />
-            <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-primary"></span>
-            <span className="sr-only">Notifications</span>
-          </Button>
+          <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="relative">
+              <Bell className="h-5 w-5" />
+              <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-primary" />
+              <span className="sr-only">Notifications</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-64">
+            <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {notifications.map((note, i) => (
+          <DropdownMenuItem key={i}>{note}</DropdownMenuItem>
+        ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
           <ModeToggle />
            <div className="flex items-center gap-4">
               <span className="text-sm text-gray-600">

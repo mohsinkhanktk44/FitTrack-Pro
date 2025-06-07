@@ -176,7 +176,7 @@ export default function ProtectedClerkAuth({
 
   // Only render Clerk auth components after captcha is verified
   return (
-    <div className="w-full max-w-md mx-auto">
+    <div className="w-full flex justify-center items-center max-w-md mx-auto">
       {!captchaVerified ? (
         <div className="p-4 border rounded-md shadow-sm">
           <h2 className="text-xl font-semibold mb-4 text-center">
@@ -220,17 +220,23 @@ export default function ProtectedClerkAuth({
       ) : (
         <>
           {mode === "signIn" ? (
+            <div className="flex justify-center items-center w-full mx-auto">
             <SignIn
               fallbackRedirectUrl={redirectUrl}
               signUpUrl={signUpUrl}
               afterSignInUrl={redirectUrl}
             />
+            </div>
+           
           ) : (
+            <div className="flex justify-center items-center w-full">
             <SignUp
               fallbackRedirectUrl={redirectUrl}
               signInUrl={signInUrl}
               afterSignUpUrl={redirectUrl}
             />
+             </div>
+
           )}
         </>
       )}

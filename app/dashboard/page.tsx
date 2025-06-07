@@ -78,8 +78,8 @@ export default function Dashboard() {
       ) : userRole === 'athlete' ? (
         <div className="bg-white dark:bg-gray-900 shadow rounded-lg p-6">
           <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Welcome, {user?.firstName || 'User'}!</h2>
-          <p className="mb-4 text-gray-600 dark:text-gray-400">You are logged in as an athlete. Here you can view and sync your workouts.</p>
-          {/* Add athlete-specific dashboard content here */}
+          <p className="mb-4 text-gray-600 dark:text-gray-400"> </p>
+            <CoachDashboard />
         </div>
       ) : (
         <div className="bg-white dark:bg-gray-900 shadow rounded-lg p-6">
