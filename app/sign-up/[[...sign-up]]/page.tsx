@@ -6,7 +6,7 @@ export default function Page() {
   // const searchParams = useSearchParams();
   // const userRole = searchParams.get('role');
   return (
-    <div className="container flex items-center justify-center min-h-screen py-12">
+    <div className="container mx-auto w-full flex items-center justify-center min-h-screen py-12">
       <ProtectedClerkAuth mode="signUp" redirectUrl="/dashboard" />
     </div>
   );

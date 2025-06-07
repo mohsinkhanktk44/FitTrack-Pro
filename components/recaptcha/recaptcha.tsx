@@ -237,7 +237,7 @@ export default function ReCAPTCHA({ onVerify, onError, action = "login" }: ReCAP
   }
 
   return (
-    <div className="recaptcha-container my-2">
+    <div className=" flex justify-center items-center recaptcha-container my-2 mx-0 w-full">
       {!scriptReady && loadAttempts > 0 && loadAttempts < MAX_LOAD_ATTEMPTS && (
         <div className="mb-4 flex items-center justify-center py-2">
           <div className="animate-spin h-5 w-5 border-b-2 border-gray-900 rounded-full mr-2"></div>
@@ -246,7 +246,7 @@ export default function ReCAPTCHA({ onVerify, onError, action = "login" }: ReCAP
       )}
       
       {!scriptReady && loadAttempts >= MAX_LOAD_ATTEMPTS && (
-        <div className="mb-4 p-2 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
+        <div className=" mb-4 p-2 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
           Failed to load reCAPTCHA. Please refresh the page and try again.
           <button 
             onClick={() => window.location.reload()}

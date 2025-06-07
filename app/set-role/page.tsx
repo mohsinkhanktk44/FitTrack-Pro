@@ -56,15 +56,16 @@ export default function SetRolePage() {
           <p className="text-gray-500 mb-6 text-center">Please select your role to continue</p>
           <form onSubmit={handleSetRole} className="w-full flex flex-col gap-4">
             <select
-              value={role}
-              onChange={e => setRole(e.target.value)}
-              className="border-2 border-blue-200 rounded-lg p-3 text-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
-              required
-            >
-              <option value="">Select a role</option>
-              <option value="athlete">Athlete</option>
-              <option value="coach">Coach</option>
-            </select>
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                className="bg-white text-black dark:bg-white dark:text-black border-2 border-blue-200 rounded-lg p-3 text-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                required
+              >
+                <option value="">Select a role</option>
+                <option value="athlete">Athlete</option>
+                <option value="coach">Coach</option>
+              </select>
+
             <button
               type="submit"
               className="bg-blue-600 hover:bg-blue-700 transition text-white text-lg font-semibold py-3 rounded-lg shadow-md disabled:opacity-60"
